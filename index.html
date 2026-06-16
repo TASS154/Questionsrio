@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lógica em Camadas — Python</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <main id="app">
+
+        <!-- TELA INICIAL -->
+        <section id="tela-inicio" class="tela ativa">
+            <div class="card hero">
+                <div class="hero-emoji">🧠</div>
+                <h1>Lógica em Camadas</h1>
+                <p class="subtitulo">
+                    Aprenda programação Python da maneira certa: do <strong>usuário</strong> até o <strong>código</strong>.
+                </p>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-num">120</span>
+                        <span class="info-label">questões</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-num">3</span>
+                        <span class="info-label">fases</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-num">4</span>
+                        <span class="info-label">blocos por fase</span>
+                    </div>
+                </div>
+
+                <div class="explicacao">
+                    <h3>Como funciona</h3>
+                    <p>
+                        Cada fase é composta por <strong>4 blocos progressivos</strong>: você começa pensando como
+                        usuário, depois aprende a lógica, depois entende o fluxo do sistema — e só então escreve código.
+                    </p>
+                    <ul class="lista-blocos">
+                        <li><span class="bloco-ico">👤</span> <strong>Fluxo de UX</strong> — o que o usuário vê e faz</li>
+                        <li><span class="bloco-ico">🧠</span> <strong>Lógica Básica</strong> — o que o programa precisa pensar</li>
+                        <li><span class="bloco-ico">⚙️</span> <strong>Fluxo de Funcionamento</strong> — o que o código faz por trás</li>
+                        <li><span class="bloco-ico">💻</span> <strong>Código</strong> — Python na prática</li>
+                    </ul>
+                </div>
+
+                <button id="btn-comecar" class="btn-primario" disabled>Começar →</button>
+
+                <div class="painel-ia" id="painel-ia">
+                    <h3>🤖 Chave Gemini (obrigatória)</h3>
+                    <p>
+                        Cole sua chave da API Google Gemini. Sem ela o curso não inicia.
+                        Fica salva só neste navegador.
+                    </p>
+                    <input type="password" id="input-api-key" placeholder="AIza..." autocomplete="off" />
+                    <div class="painel-ia-acoes">
+                        <button type="button" id="btn-salvar-ia" class="btn-secundario">Salvar chave</button>
+                        <button type="button" id="btn-remover-ia" class="btn-secundario">Remover</button>
+                    </div>
+                    <span id="status-ia" class="status-ia inativo">Gemini não configurado</span>
+                </div>
+
+                <p class="dica">
+                    Se errar uma alternativa, pode tentar de novo quantas vezes precisar.
+                    A partir do segundo chute, você <strong>justifica a nova escolha</strong> antes de confirmar.
+                </p>
+            </div>
+        </section>
+
+        <!-- TELA DE QUESTÃO -->
+        <section id="tela-questao" class="tela">
+            <header class="cabecalho">
+                <div class="cabecalho-info">
+                    <div class="badge" id="badge-fase">Fácil</div>
+                    <div class="caminho" id="caminho">Bloco 1 — Fluxo de UX · Questão 1 de 10</div>
+                </div>
+                <div class="placar">
+                    <span id="placar-acertos">0</span> / <span id="placar-total">0</span>
+                </div>
+            </header>
+
+            <div class="progresso">
+                <div class="progresso-barra" id="progresso-barra"></div>
+            </div>
+
+            <div class="card questao-card">
+                <div class="bloco-header" id="bloco-header">
+                    <span class="bloco-icone" id="bloco-icone">👤</span>
+                    <div>
+                        <h2 id="bloco-nome">Fluxo de UX</h2>
+                        <p id="bloco-descricao">O que o usuário vê e faz na interface</p>
+                    </div>
+                </div>
+
+                <div class="questao-tipo" id="questao-tipo">Alternativa</div>
+                <h3 class="enunciado" id="enunciado">Pergunta aqui</h3>
+
+                <div class="acoes-questao">
+                    <button type="button" id="btn-dica" class="btn-secundario">💡 Ver dica</button>
+                </div>
+                <div id="painel-dica" class="painel-dica" hidden></div>
+
+                <!-- Container de alternativas -->
+                <div id="container-alternativas" class="alternativas"></div>
+
+                <!-- Container de dissertativa -->
+                <div id="container-dissertativa" class="dissertativa-area" hidden>
+                    <textarea id="texto-resposta" rows="6" placeholder="Escreva sua resposta aqui..."></textarea>
+                    <button id="btn-enviar-dissertativa" class="btn-primario">Enviar resposta</button>
+                </div>
+
+                <!-- Feedback -->
+                <div id="feedback" class="feedback" hidden>
+                    <div id="feedback-titulo" class="feedback-titulo"></div>
+                    <div id="feedback-conteudo" class="feedback-conteudo"></div>
+                    <div id="justificativa-area" class="justificativa-area" hidden>
+                        <p id="justificativa-prompt">Explique por que escolheu essa resposta:</p>
+                        <textarea id="texto-justificativa" rows="4" placeholder="Descreva seu raciocínio..."></textarea>
+                        <button type="button" id="btn-enviar-justificativa" class="btn-secundario">Enviar justificativa</button>
+                    </div>
+                    <div id="feedback-ia" class="feedback-ia" hidden></div>
+
+                    <div id="nota-ia-box" class="nota-ia-box" hidden>
+                        <span class="nota-ia-label">Nota da IA</span>
+                        <span id="nota-ia-valor" class="nota-ia-valor">—</span>
+                        <span class="nota-ia-meta">/ 10 · mínimo 6 para avançar</span>
+                    </div>
+
+                    <div id="chat-ia-area" class="chat-ia-area" hidden>
+                        <div id="chat-mensagens" class="chat-mensagens"></div>
+                        <div class="chat-input-row">
+                            <textarea id="chat-input" rows="2" placeholder="Converse com a tutora..."></textarea>
+                            <button type="button" id="btn-enviar-chat" class="btn-secundario">Enviar</button>
+                        </div>
+                        <button type="button" id="btn-continuar-pos-chat" class="btn-primario btn-continuar-chat" hidden>
+                            Continuar e avaliar minha escolha →
+                        </button>
+                    </div>
+
+                    <button id="btn-proxima" class="btn-primario" hidden>Próxima →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TELA DE CONCLUSÃO DE FASE -->
+        <section id="tela-fase-completa" class="tela">
+            <div class="card celebracao">
+                <div class="confete">🎉</div>
+                <h2 id="fase-titulo">Fase Fácil completada!</h2>
+                <p id="fase-tema">Tema conectado: Sistema de Login</p>
+                <div class="resumo">
+                    <div class="resumo-item">
+                        <span id="resumo-acertos" class="resumo-num">0</span>
+                        <span class="resumo-label">acertos nesta fase</span>
+                    </div>
+                    <div class="resumo-item">
+                        <span id="resumo-total" class="resumo-num">40</span>
+                        <span class="resumo-label">questões</span>
+                    </div>
+                </div>
+                <p class="celebra-msg" id="celebra-msg">Você viu a mesma situação por 4 perspectivas — esse é o segredo do bom programador.</p>
+                <button id="btn-proxima-fase" class="btn-primario">Próxima fase →</button>
+            </div>
+        </section>
+
+        <!-- TELA FINAL -->
+        <section id="tela-final" class="tela">
+            <div class="card celebracao final">
+                <div class="confete">🏆</div>
+                <h2>Parabéns!</h2>
+                <p>Você completou todas as 120 questões.</p>
+                <div class="resumo">
+                    <div class="resumo-item">
+                        <span id="final-acertos" class="resumo-num">0</span>
+                        <span class="resumo-label">acertos no total</span>
+                    </div>
+                    <div class="resumo-item">
+                        <span class="resumo-num">120</span>
+                        <span class="resumo-label">questões</span>
+                    </div>
+                </div>
+                <p class="final-msg">
+                    Você aprendeu a olhar para um problema em <strong>4 camadas</strong>: usuário, lógica, sistema e código.
+                    Esse é o jeito de pensar que diferencia quem só copia código de quem realmente programa.
+                </p>
+                <button id="btn-reiniciar" class="btn-primario">Reiniciar</button>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="questions.js"></script>
+    <script src="question-patches.js"></script>
+    <script src="ai-prompts.js"></script>
+    <script src="ai-config.js"></script>
+    <script src="ai-service.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
