@@ -30,6 +30,11 @@
     padding: 0;
 }
 
+/* display:flex/block em componentes não pode anular o atributo hidden */
+[hidden] {
+    display: none !important;
+}
+
 html,
 body {
     height: 100%;
@@ -186,6 +191,170 @@ body {
     margin-top: 16px;
 }
 
+.hero-topo {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 4px;
+}
+
+.btn-icone {
+    background: var(--card-bg-2);
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    line-height: 1;
+}
+
+.btn-icone:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--sombra);
+}
+
+.btn-fechar {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+}
+
+.acoes-inicio {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+    margin-top: 8px;
+}
+
+.acoes-inicio .btn-primario,
+.acoes-inicio .btn-secundario {
+    margin-top: 0;
+    width: 100%;
+}
+
+/* ---------- Modal histórico ---------- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 27, 46, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1000;
+}
+
+.modal-card {
+    background: var(--card-bg);
+    border-radius: var(--raio);
+    padding: 24px;
+    width: min(560px, 100%);
+    max-height: min(80vh, 640px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--sombra-hover);
+    border: 1px solid var(--borda);
+}
+
+.modal-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.modal-cabecalho h2 {
+    font-size: 1.15rem;
+    color: var(--roxo-escuro);
+}
+
+.modal-sub {
+    color: var(--texto-suave);
+    font-size: 0.88rem;
+    margin-bottom: 14px;
+}
+
+.lista-historico {
+    list-style: none;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.lista-historico li button {
+    width: 100%;
+    text-align: left;
+    background: var(--card-bg-2);
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.lista-historico li button:hover {
+    border-color: var(--primario);
+    background: rgba(37, 99, 235, 0.06);
+}
+
+.historico-item-titulo {
+    display: block;
+    font-weight: 600;
+    color: var(--texto);
+    font-size: 0.92rem;
+    line-height: 1.4;
+}
+
+.historico-item-meta {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+    margin-top: 4px;
+}
+
+.historico-vazio {
+    color: var(--texto-suave);
+    text-align: center;
+    padding: 24px 12px;
+}
+
+/* ---------- Tela revisão ---------- */
+.btn-voltar {
+    margin-bottom: 16px;
+}
+
+.revisao-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.revisao-info {
+    background: var(--card-bg-2);
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.88rem;
+    color: var(--texto-suave);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+#revisao-chat-mensagens {
+    margin-bottom: 12px;
+    max-height: 360px;
+}
+
+
 /* ---------- Botões ---------- */
 .btn-primario {
     background: linear-gradient(135deg, var(--primario), var(--primario-hover));
@@ -241,6 +410,30 @@ body {
 .caminho {
     color: var(--texto-suave);
     font-size: 0.9rem;
+}
+
+.cabecalho-direita {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.nav-questao {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.btn-nav {
+    margin-top: 0;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+}
+
+.nav-revisao {
+    margin-bottom: 16px;
 }
 
 .placar {
@@ -735,6 +928,19 @@ body {
     .cabecalho {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .cabecalho-direita {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .nav-questao {
+        justify-content: stretch;
+    }
+
+    .nav-questao .btn-nav {
+        flex: 1;
     }
 
     .resumo {

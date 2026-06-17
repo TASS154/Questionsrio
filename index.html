@@ -12,6 +12,9 @@
         <!-- TELA INICIAL -->
         <section id="tela-inicio" class="tela ativa">
             <div class="card hero">
+                <div class="hero-topo">
+                    <button type="button" id="btn-historico" class="btn-icone" title="Revisar perguntas respondidas" aria-label="Revisar perguntas respondidas">📚</button>
+                </div>
                 <div class="hero-emoji">🧠</div>
                 <h1>Lógica em Camadas</h1>
                 <p class="subtitulo">
@@ -47,26 +50,49 @@
                     </ul>
                 </div>
 
-                <button id="btn-comecar" class="btn-primario" disabled>Começar →</button>
-
-                <div class="painel-ia" id="painel-ia">
-                    <h3>🤖 Chave Gemini (obrigatória)</h3>
-                    <p>
-                        Cole sua chave da API Google Gemini. Sem ela o curso não inicia.
-                        Fica salva só neste navegador.
-                    </p>
-                    <input type="password" id="input-api-key" placeholder="AIza..." autocomplete="off" />
-                    <div class="painel-ia-acoes">
-                        <button type="button" id="btn-salvar-ia" class="btn-secundario">Salvar chave</button>
-                        <button type="button" id="btn-remover-ia" class="btn-secundario">Remover</button>
-                    </div>
-                    <span id="status-ia" class="status-ia inativo">Gemini não configurado</span>
+                <div class="acoes-inicio">
+                    <button id="btn-continuar" class="btn-primario" hidden>Continuar de onde parei →</button>
+                    <button id="btn-comecar" class="btn-primario">Começar →</button>
+                    <button id="btn-comecar-zero" class="btn-secundario" hidden>Recomeçar do zero</button>
                 </div>
 
                 <p class="dica">
                     Se errar uma alternativa, pode tentar de novo quantas vezes precisar.
                     A partir do segundo chute, você <strong>justifica a nova escolha</strong> antes de confirmar.
                 </p>
+            </div>
+        </section>
+
+        <!-- MODAL HISTÓRICO -->
+        <div id="modal-historico" class="modal-overlay" hidden>
+            <div class="modal-card" role="dialog" aria-labelledby="modal-historico-titulo">
+                <div class="modal-cabecalho">
+                    <h2 id="modal-historico-titulo">📚 Perguntas respondidas</h2>
+                    <button type="button" id="btn-fechar-historico" class="btn-icone btn-fechar" aria-label="Fechar">✕</button>
+                </div>
+                <p class="modal-sub">Toque em uma pergunta para revisar e tirar dúvidas com a tutora.</p>
+                <ul id="lista-historico" class="lista-historico"></ul>
+                <p id="historico-vazio" class="historico-vazio" hidden>Nenhuma pergunta respondida ainda. Comece o curso!</p>
+            </div>
+        </div>
+
+        <!-- TELA REVISÃO (chat sobre questão respondida) -->
+        <section id="tela-revisao" class="tela">
+            <div class="card questao-card">
+                <div class="nav-questao nav-revisao">
+                    <button type="button" id="btn-voltar-revisao" class="btn-secundario btn-nav">🏠 Início</button>
+                </div>
+                <div class="revisao-meta">
+                    <span class="badge" id="revisao-badge">Fácil</span>
+                    <span class="caminho" id="revisao-caminho">Bloco · Questão</span>
+                </div>
+                <h3 class="enunciado" id="revisao-enunciado">Pergunta</h3>
+                <div id="revisao-info" class="revisao-info"></div>
+                <div id="revisao-chat-mensagens" class="chat-mensagens"></div>
+                <div class="chat-input-row">
+                    <textarea id="revisao-chat-input" rows="2" placeholder="Tire suas dúvidas sobre esta pergunta..."></textarea>
+                    <button type="button" id="btn-revisao-enviar" class="btn-secundario">Enviar</button>
+                </div>
             </div>
         </section>
 
@@ -77,8 +103,14 @@
                     <div class="badge" id="badge-fase">Fácil</div>
                     <div class="caminho" id="caminho">Bloco 1 — Fluxo de UX · Questão 1 de 10</div>
                 </div>
-                <div class="placar">
-                    <span id="placar-acertos">0</span> / <span id="placar-total">0</span>
+                <div class="cabecalho-direita">
+                    <div class="nav-questao">
+                        <button type="button" id="btn-voltar-questao" class="btn-secundario btn-nav" title="Questão anterior">← Anterior</button>
+                        <button type="button" id="btn-home" class="btn-secundario btn-nav" title="Voltar ao início">🏠 Início</button>
+                    </div>
+                    <div class="placar" title="Questão atual no bloco">
+                        <span id="placar-atual">1</span> / <span id="placar-total">10</span>
+                    </div>
                 </div>
             </header>
 
@@ -116,11 +148,6 @@
                 <div id="feedback" class="feedback" hidden>
                     <div id="feedback-titulo" class="feedback-titulo"></div>
                     <div id="feedback-conteudo" class="feedback-conteudo"></div>
-                    <div id="justificativa-area" class="justificativa-area" hidden>
-                        <p id="justificativa-prompt">Explique por que escolheu essa resposta:</p>
-                        <textarea id="texto-justificativa" rows="4" placeholder="Descreva seu raciocínio..."></textarea>
-                        <button type="button" id="btn-enviar-justificativa" class="btn-secundario">Enviar justificativa</button>
-                    </div>
                     <div id="feedback-ia" class="feedback-ia" hidden></div>
 
                     <div id="nota-ia-box" class="nota-ia-box" hidden>
@@ -194,8 +221,10 @@
 
     <script src="questions.js"></script>
     <script src="question-patches.js"></script>
+    <script src="progress.js"></script>
     <script src="ai-prompts.js"></script>
     <script src="ai-config.js"></script>
+    <script src="ai-config.local.js"></script>
     <script src="ai-service.js"></script>
     <script src="script.js"></script>
 </body>

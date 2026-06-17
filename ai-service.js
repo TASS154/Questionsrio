@@ -1,29 +1,40 @@
 // Serviço Gemini — avaliação de justificativas e dissertativas.
 
 const AIService = {
-    async _gemini(systemPrompt, userPrompt) {
-        if (!AIConfig.isReady()) {
-            throw new Error('Configure sua chave Gemini na tela inicial.');
-        }
+    _modelCandidates() {
+        return [AI_CONFIG.model, ...(AI_CONFIG.fallbackModels || [])]
+            .filter((m, i, arr) => m && arr.indexOf(m) === i);
+    },
 
-        const url = `${AI_CONFIG.baseUrl}/models/${AI_CONFIG.model}:generateContent?key=${encodeURIComponent(AI_CONFIG.apiKey)}`;
+    _formatGeminiError(status, errText) {
+        const snippet = errText.slice(0, 280);
+        if (status === 429) {
+            return (
+                'Gemini (429): cota ou capacidade esgotada. ' +
+                'Se o painel mostra pouco uso, o modelo antigo pode estar descontinuado — ' +
+                'recarregue a página (Ctrl+F5). Detalhe: ' + snippet
+            );
+        }
+        if (status === 404) {
+            return 'Gemini (404): modelo não encontrado ou descontinuado. Detalhe: ' + snippet;
+        }
+        return `Gemini (${status}): ${snippet}`;
+    },
+
+    async _requestGemini(model, payload) {
+        const url = `${AI_CONFIG.baseUrl}/models/${model}:generateContent?key=${encodeURIComponent(AI_CONFIG.apiKey)}`;
 
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-                generationConfig: {
-                    temperature: 0.45,
-                    responseMimeType: 'application/json'
-                }
-            })
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
             const err = await response.text();
-            throw new Error(`Gemini (${response.status}): ${err.slice(0, 280)}`);
+            const error = new Error(this._formatGeminiError(response.status, err));
+            error.status = response.status;
+            throw error;
         }
 
         const data = await response.json();
@@ -31,39 +42,60 @@ const AIService = {
         return JSON.parse(raw);
     },
 
-    async _geminiChat(systemPrompt, messages) {
+    async _gemini(systemPrompt, userPrompt) {
         if (!AIConfig.isReady()) {
             throw new Error('Configure sua chave Gemini na tela inicial.');
         }
 
-        const url = `${AI_CONFIG.baseUrl}/models/${AI_CONFIG.model}:generateContent?key=${encodeURIComponent(AI_CONFIG.apiKey)}`;
+        const payload = {
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+            generationConfig: {
+                temperature: 0.45,
+                responseMimeType: 'application/json'
+            }
+        };
+
+        return this._callWithFallback(payload);
+    },
+
+    async _geminiChat(systemPrompt, messages) {
+        if (!AIConfig.isReady()) {
+            throw new Error('Configure sua chave Gemini na tela inicial.');
+        }
 
         const contents = messages.map(m => ({
             role: m.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: m.content }]
         }));
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                contents,
-                generationConfig: {
-                    temperature: 0.55,
-                    responseMimeType: 'application/json'
-                }
-            })
-        });
+        const payload = {
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents,
+            generationConfig: {
+                temperature: 0.55,
+                responseMimeType: 'application/json'
+            }
+        };
 
-        if (!response.ok) {
-            const err = await response.text();
-            throw new Error(`Gemini (${response.status}): ${err.slice(0, 280)}`);
+        return this._callWithFallback(payload);
+    },
+
+    async _callWithFallback(payload) {
+        const models = this._modelCandidates();
+        let lastError;
+
+        for (let i = 0; i < models.length; i++) {
+            try {
+                return await this._requestGemini(models[i], payload);
+            } catch (e) {
+                lastError = e;
+                const retryable = e.status === 429 || e.status === 404 || e.status === 503;
+                if (!retryable || i === models.length - 1) throw e;
+            }
         }
 
-        const data = await response.json();
-        const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-        return JSON.parse(raw);
+        throw lastError;
     },
 
     formatAlternativas(questao) {
@@ -98,5 +130,33 @@ const AIService = {
     async evaluateDissertative(ctx) {
         const user = AI_PROMPTS.dissertativa.buildUser(ctx);
         return this._gemini(AI_PROMPTS.dissertativa.system, user);
+    },
+
+    async chatRevisao(ctx, historico, mensagem) {
+        const historicoTexto = historico
+            .map(h => `${h.role === 'user' ? 'Aluno' : 'Tutora'}: ${h.content}`)
+            .join('\n');
+
+        const user = AI_PROMPTS.revisao.buildUser({
+            ...ctx,
+            historicoConversa: historicoTexto,
+            mensagem
+        });
+
+        return this._gemini(AI_PROMPTS.revisao.system, user);
+    },
+
+    async chatAprofundamento(ctx, historico, mensagem) {
+        const historicoTexto = historico
+            .map(h => `${h.role === 'user' ? 'Aluno' : 'Tutora'}: ${h.content}`)
+            .join('\n');
+
+        const user = AI_PROMPTS.aprofundamento.buildUser({
+            ...ctx,
+            historicoConversa: historicoTexto,
+            mensagem
+        });
+
+        return this._gemini(AI_PROMPTS.aprofundamento.system, user);
     }
 };
