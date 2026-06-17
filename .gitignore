@@ -1,2 +1,13 @@
-# Chave da API — nunca commitar
+# Chave Gemini — nunca commitar
 ai-config.local.js
+.env
+.env.local
+.env*.local
+
+# Vercel
+.vercel
+
+# SO / editor
+.DS_Store
+Thumbs.db
+*.log

@@ -22,13 +22,25 @@ const AIService = {
     },
 
     async _requestGemini(model, payload) {
-        const url = `${AI_CONFIG.baseUrl}/models/${model}:generateContent?key=${encodeURIComponent(AI_CONFIG.apiKey)}`;
+        let response;
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        if (AIConfig.usaProxy()) {
+            response = await fetch('/api/gemini', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model, payload })
+            });
+        } else {
+            const url =
+                `${AI_CONFIG.baseUrl}/models/${model}:generateContent` +
+                `?key=${encodeURIComponent(AI_CONFIG.apiKey)}`;
+
+            response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
 
         if (!response.ok) {
             const err = await response.text();
@@ -44,7 +56,10 @@ const AIService = {
 
     async _gemini(systemPrompt, userPrompt) {
         if (!AIConfig.isReady()) {
-            throw new Error('Configure sua chave Gemini na tela inicial.');
+            throw new Error(
+                'IA indisponível. Em produção, configure GEMINI_API_KEY na Vercel. ' +
+                'Localmente, crie ai-config.local.js a partir do .example.'
+            );
         }
 
         const payload = {
@@ -61,7 +76,10 @@ const AIService = {
 
     async _geminiChat(systemPrompt, messages) {
         if (!AIConfig.isReady()) {
-            throw new Error('Configure sua chave Gemini na tela inicial.');
+            throw new Error(
+                'IA indisponível. Em produção, configure GEMINI_API_KEY na Vercel. ' +
+                'Localmente, crie ai-config.local.js a partir do .example.'
+            );
         }
 
         const contents = messages.map(m => ({

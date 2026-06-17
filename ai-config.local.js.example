@@ -1,0 +1,5 @@
+// Copie este arquivo para ai-config.local.js (não vai pro Git).
+// Desenvolvimento local com python -m http.server — chama a API Gemini direto.
+
+AI_CONFIG.apiKey = 'COLE_SUA_CHAVE_GEMINI_AQUI';
+AI_CONFIG.useProxy = false;
